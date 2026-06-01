@@ -1,0 +1,146 @@
+name: Build & Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger build on publication tags (e.g., v1.0.0, v1.1.2)
+  workflow_dispatch: # Enable manual builds directly from GitHub CLI or Dashboard
+    inputs:
+      build_type:
+        description: 'Choose build type (release or debug)'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'release'
+          - 'debug'
+      publish_release:
+        description: 'Publish and draft a GitHub release?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      release_tag:
+        description: 'Release Tag Name (e.g. v1.1.0; empty triggers auto timestamp tag)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write # Grants permissions to create releases and upload build assets
+
+jobs:
+  build:
+    name: Build & Test Android App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for git tags & accurate release logs
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle' # Automatically caches gradle artifacts & dependencies to accelerate build speeds
+
+      - name: Regenerate Gradle Wrapper (Fix invalid/corrupt wrapper jar)
+        run: gradle wrapper --gradle-version 9.3.1
+
+      - name: Grant Executable Permissions to Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Create placeholders for secrets
+        run: |
+          echo "GEMINI_API_KEY=dummy_key_for_compilation" >> .env
+          echo "KEYSTORE_PATH=../my-upload-key.jks" >> .env
+
+      - name: Build and Sign Application Package
+        env:
+          KEYSTORE_BASE64: ${{ secrets.PLAY_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          # 1. Determine Build Type & Publish options
+          BUILD_TYPE="release"
+          PUBLISH="false"
+          TAG_NAME=""
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BUILD_TYPE="${{ github.event.inputs.build_type }}"
+            PUBLISH="${{ github.event.inputs.publish_release }}"
+            TAG_NAME="${{ github.event.inputs.release_tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            BUILD_TYPE="release"
+            PUBLISH="true"
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+          
+          if [ -z "$TAG_NAME" ]; then
+            TAG_NAME="v-manual-$(date +'%Y.%m.%d-%H%M%S')"
+          fi
+          
+          echo "Selected Build Type: $BUILD_TYPE"
+          echo "Selected Publish Option: $PUBLISH"
+          echo "Selected Tag Name: $TAG_NAME"
+          
+          echo "BUILD_TYPE=$BUILD_TYPE" >> $GITHUB_ENV
+          echo "PUBLISH_RELEASE=$PUBLISH" >> $GITHUB_ENV
+          echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
+
+          # 2. Extract keystore if provided in secrets, otherwise use the project-embedded one
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "--- Securing Release Keystore from Play Store Base64 ---"
+            echo -n "$KEYSTORE_BASE64" | base64 --decode > my-upload-key.jks
+            export KEYSTORE_PATH=$(pwd)/my-upload-key.jks
+          else
+            echo "--- Using Project-Embedded Release Keystore ---"
+            export KEYSTORE_PATH=$(pwd)/my-upload-key.jks
+            
+            # Default passwords for the demo JKS keystore if none provided as secrets
+            if [ -z "$STORE_PASSWORD" ]; then
+              export STORE_PASSWORD="android"
+            fi
+            if [ -z "$KEY_PASSWORD" ]; then
+              export KEY_PASSWORD="android"
+            fi
+            
+            echo "STORE_PASSWORD=$STORE_PASSWORD" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+          fi
+
+          # 3. Compile base on selection
+          if [ "$BUILD_TYPE" = "release" ]; then
+            echo "--- Compiling Production Release Build ---"
+            ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
+          else
+            echo "--- Compiling Development Debug Build ---"
+            ./gradlew :app:assembleDebug --no-daemon
+          fi
+
+      - name: Archive Construction Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-outputs
+          path: |
+            app/build/outputs/apk/**/*.apk
+            app/build/outputs/bundle/**/*.aab
+
+      - name: Publish Draft GitHub Release
+        if: env.PUBLISH_RELEASE == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: false
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: |
+            app/build/outputs/apk/**/*.apk
+            app/build/outputs/bundle/**/*.aab
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

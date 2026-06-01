@@ -1,0 +1,5 @@
+# Mark binary files to prevent corruption during carriage-return/line-feed (CRLF/LF) normalization
+*.jar binary
+*.jks binary
+*.png binary
+*.webp binary

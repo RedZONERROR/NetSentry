@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Shield Stroke with Glowing Gradient -->
+    <path
+        android:pathData="M 54,22 C 64,22 74,18 80,22 C 80,48 76,74 54,88 C 32,74 28,48 28,22 C 34,18 44,22 54,22 Z"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="28"
+                android:startY="22"
+                android:endX="80"
+                android:endY="88"
+                android:type="linear">
+                <item android:color="#38BDF8" android:offset="0.0" />
+                <item android:color="#0EA5E9" android:offset="0.5" />
+                <item android:color="#6366F1" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Semi-transparent Inner Shield Fill -->
+    <path
+        android:pathData="M 54,25.5 C 62.5,25.5 70.5,22 75.5,25.5 C 75.5,46.5 72.5,69 54,81.5 C 35.5,69 32.5,46.5 32.5,25.5 C 37.5,22 45.5,25.5 54,25.5 Z"
+        android:fillColor="#1538BDF8" />
+
+    <!-- AI Core Sentinel: Glowing Center Node -->
+    <path
+        android:pathData="M 54,42 A 12,12 0 1,1 53.99,42 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#38BDF8">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="42"
+                android:startY="42"
+                android:endX="66"
+                android:endY="66"
+                android:type="linear">
+                <item android:color="#38BDF8" android:offset="0.0" />
+                <item android:color="#06B6D4" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    
+    <!-- AI Core Inner Target Eye Pulse -->
+    <path
+        android:pathData="M 54,49 A 5,5 0 1,1 53.99,49 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Firewall Circuit Rays -->
+    <path
+        android:pathData="M 54,30 L 54,25"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeColor="#38BDF8" />
+    <path
+        android:pathData="M 54,78 L 54,82"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeColor="#6366F1" />
+    <path
+        android:pathData="M 36,54 L 32,54"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeColor="#38BDF8" />
+    <path
+        android:pathData="M 72,54 L 76,54"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeColor="#0EA5E9" />
+        
+    <!-- Left-Right Diagonal Nodes connection -->
+    <path
+        android:pathData="M 45,45 L 39,39"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#38BDF8" android:alpha="0.7" />
+    <path
+        android:pathData="M 63,45 L 69,39"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#38BDF8" android:alpha="0.7" />
+    <path
+        android:pathData="M 45,63 L 39,69"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#6366F1" android:alpha="0.7" />
+    <path
+        android:pathData="M 63,63 L 69,69"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#6366F1" android:alpha="0.7" />
+
+    <!-- Glowing Node Terminals -->
+    <path
+        android:pathData="M 39,39 A 2,2 0 1,1 38.99,39 Z"
+        android:fillColor="#38BDF8" />
+    <path
+        android:pathData="M 69,39 A 2,2 0 1,1 68.99,39 Z"
+        android:fillColor="#38BDF8" />
+    <path
+        android:pathData="M 39,69 A 2,2 0 1,1 38.99,69 Z"
+        android:fillColor="#6366F1" />
+    <path
+        android:pathData="M 69,69 A 2,2 0 1,1 68.99,69 Z"
+        android:fillColor="#6366F1" />
+
+</vector>
